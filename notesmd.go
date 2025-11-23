@@ -10,12 +10,15 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/gomarkdown/markdown"
+	"github.com/microcosm-cc/bluemonday"
 	"gopkg.in/ini.v1"
 )
 
 type Page struct {
 	Title string
 	Body  []byte
+	Raw   template.HTML
 }
 
 type Config struct {
@@ -26,17 +29,23 @@ var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 var templates = template.Must(template.ParseFiles("web/templates/edit.html", "web/templates/view.html", "web/templates/index.html"))
 
 func (p *Page) save(config Config) error {
-	filename := filepath.Join(config.DataDir, p.Title+".txt")
+	filename := filepath.Join(config.DataDir, p.Title+".md")
 	return os.WriteFile(filename, p.Body, 0600)
 }
 
 func loadPage(title string, config Config) (*Page, error) {
-	filename := filepath.Join(config.DataDir, title+".txt")
+	filename := filepath.Join(config.DataDir, title+".md")
 	body, err := os.ReadFile(filename)
+
 	if err != nil {
 		return nil, err
 	}
-	return &Page{Title: title, Body: body}, nil
+
+	html := markdown.ToHTML(body, nil, nil)
+	sanitized := bluemonday.UGCPolicy().SanitizeBytes(body)
+	raw := template.HTML(sanitized)
+
+	return &Page{Title: title, Body: html, Raw: raw}, nil
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
