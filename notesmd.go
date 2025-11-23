@@ -17,8 +17,8 @@ import (
 
 type Page struct {
 	Title string
-	Body  []byte
-	Raw   template.HTML
+	Body  template.HTML
+	Raw   []byte
 }
 
 type Config struct {
@@ -30,22 +30,22 @@ var templates = template.Must(template.ParseFiles("web/templates/edit.html", "we
 
 func (p *Page) save(config Config) error {
 	filename := filepath.Join(config.DataDir, p.Title+".md")
-	return os.WriteFile(filename, p.Body, 0600)
+	return os.WriteFile(filename, p.Raw, 0600)
 }
 
 func loadPage(title string, config Config) (*Page, error) {
 	filename := filepath.Join(config.DataDir, title+".md")
-	body, err := os.ReadFile(filename)
+	raw, err := os.ReadFile(filename)
 
 	if err != nil {
 		return nil, err
 	}
 
-	html := markdown.ToHTML(body, nil, nil)
-	sanitized := bluemonday.UGCPolicy().SanitizeBytes(body)
-	raw := template.HTML(sanitized)
+	html := markdown.ToHTML(raw, nil, nil)
+	sanitized := bluemonday.UGCPolicy().SanitizeBytes(html)
+	body := template.HTML(sanitized)
 
-	return &Page{Title: title, Body: html, Raw: raw}, nil
+	return &Page{Title: title, Body: body, Raw: raw}, nil
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
@@ -66,7 +66,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request, title string, config Co
 
 func saveHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
 	body := r.FormValue("body")
-	p := &Page{Title: title, Body: []byte(body)}
+	p := &Page{Title: title, Raw: []byte(body)}
 	err := p.save(config)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -111,7 +111,7 @@ func main() {
 	http.HandleFunc("/save/", makeHandler(saveHandler, config))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		renderTemplate(w, "index", &Page{Title: "Index", Body: nil})
+		renderTemplate(w, "index", &Page{Title: "Index", Raw: nil})
 	})
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
