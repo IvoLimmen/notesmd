@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/microcosm-cc/bluemonday"
@@ -22,11 +24,12 @@ type Page struct {
 }
 
 type Config struct {
-	DataDir string
+	DataDir  string
+	AllFiles []string
 }
 
-var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
-var templates = template.Must(template.ParseFiles("web/templates/edit.html", "web/templates/view.html", "web/templates/index.html"))
+var validPath = regexp.MustCompile("^/(edit|save|view|special)/([a-zA-Z0-9]+)$")
+var templates = template.Must(template.ParseFiles("web/templates/edit.html", "web/templates/view.html", "web/templates/allfiles.html"))
 
 func (p *Page) save(config Config) error {
 	filename := filepath.Join(config.DataDir, p.Title+".md")
@@ -83,6 +86,23 @@ func editHandler(w http.ResponseWriter, r *http.Request, title string, config Co
 	renderTemplate(w, "edit", p)
 }
 
+func specialHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
+	switch title {
+	case "AllFiles":
+		files := listFiles(config)
+		err := templates.ExecuteTemplate(w, "allfiles.html", files)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	case "RandomFile":
+		files := listFiles(config)
+		file := files[rand.IntN(len(files))]
+		http.Redirect(w, r, "/view/"+file, http.StatusFound)
+	default:
+		http.Redirect(w, r, "/view/Index", http.StatusFound)
+	}
+}
+
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string, Config), config Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		m := validPath.FindStringSubmatch(r.URL.Path)
@@ -92,6 +112,21 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string, Config), co
 		}
 		fn(w, r, m[2], config)
 	}
+}
+
+func listFiles(config Config) []string {
+	entries, err := os.ReadDir(config.DataDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var files []string
+	for _, e := range entries {
+		base := strings.Split(e.Name(), ".")[0]
+		files = append(files, base)
+	}
+
+	return files
 }
 
 func main() {
@@ -109,9 +144,10 @@ func main() {
 	http.HandleFunc("/view/", makeHandler(viewHandler, config))
 	http.HandleFunc("/edit/", makeHandler(editHandler, config))
 	http.HandleFunc("/save/", makeHandler(saveHandler, config))
+	http.HandleFunc("/special/", makeHandler(specialHandler, config))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		renderTemplate(w, "index", &Page{Title: "Index", Raw: nil})
+		http.Redirect(w, r, "/view/Index", http.StatusFound)
 	})
 
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
