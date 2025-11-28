@@ -31,6 +31,7 @@ type Config struct {
 var validPath = regexp.MustCompile("^/(edit|save|view|special|delete)/([a-zA-Z0-9\\s]+)$")
 var tmplFiles = []string{
 	"web/templates/header.html",
+	"web/templates/menu.html",
 	"web/templates/edit.html",
 	"web/templates/view.html",
 	"web/templates/allfiles.html",
