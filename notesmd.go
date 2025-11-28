@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"html/template"
 	"log"
@@ -14,7 +15,6 @@ import (
 
 	"github.com/gomarkdown/markdown"
 	"github.com/microcosm-cc/bluemonday"
-	"gopkg.in/ini.v1"
 )
 
 type Page struct {
@@ -28,7 +28,7 @@ type Config struct {
 	AllFiles []string
 }
 
-var validPath = regexp.MustCompile("^/(edit|save|view|special)/([a-zA-Z0-9]+)$")
+var validPath = regexp.MustCompile("^/(edit|save|view|special)/([a-zA-Z0-9\\s]+)$")
 var templates = template.Must(template.ParseFiles("web/templates/edit.html", "web/templates/view.html", "web/templates/allfiles.html"))
 
 func (p *Page) save(config Config) error {
@@ -130,25 +130,26 @@ func listFiles(config Config) []string {
 }
 
 func main() {
-	cfg, err := ini.Load("notesmd.ini")
-	if err != nil {
-		fmt.Printf("Fail to read file: %v", err)
-		os.Exit(1)
-	}
+	dataDir := flag.String("data_dir", "notes", "Path to the directory where all the markdown files are stored.")
+	port := flag.Int("port", 8080, "Port to run the webserver on.")
+
+	flag.Parse()
+
+	fmt.Printf("NotesMD, running on port %d, using directory %s", *port, *dataDir)
 
 	config := Config{DataDir: "undefined"}
-	config.DataDir = cfg.Section("paths").Key("data_dir").String()
-
-	port := cfg.Section("server").Key("http_port").MustInt(8080)
+	config.DataDir = *dataDir
 
 	http.HandleFunc("/view/", makeHandler(viewHandler, config))
 	http.HandleFunc("/edit/", makeHandler(editHandler, config))
 	http.HandleFunc("/save/", makeHandler(saveHandler, config))
 	http.HandleFunc("/special/", makeHandler(specialHandler, config))
 
+	http.Handle("/web/", http.StripPrefix("/web", http.FileServer(http.Dir("./web"))))
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/view/Index", http.StatusFound)
 	})
 
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }

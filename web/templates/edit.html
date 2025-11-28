@@ -1,6 +1,349 @@
-<h1>Editing {{.Title}}</h1>
+<!DOCTYPE html>
 
-<form action="/save/{{.Title}}" method="POST">
-<div><textarea name="body" rows="20" cols="80">{{printf "%s" .Raw}}</textarea></div>
-<div><input type="submit" value="Save"></div>
-</form>
+<head>
+    <link rel="stylesheet" href="/web/main.css">
+</head>
+
+<body>
+    <div class="row">
+        <div class="column">
+            <h1>Editing {{.Title}}</h1>
+
+            <form action="/save/{{.Title}}" method="POST">
+                <div><textarea name="body" rows="50" cols="120">{{printf "%s" .Raw}}</textarea></div>
+                <div><input type="submit" value="Save"></div>
+            </form>
+        </div>
+        <div class="column sheetsheet">            
+            <div>
+                <a href="https://www.markdownlang.com/cheatsheet/">Complete cheatsheet</a>
+                <div>
+                    <h6>Emphasis</h6>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <code>_Text_</code>
+                                </td>
+                                <td>
+                                    Displays text in italics
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <code>**Text**</code>
+                                </td>
+                                <td>
+                                    Displays the text in bold
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>**_Text_**</code>
+                                </td>
+                                <td>
+                                    Displays the text in bold and italics
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>~~Text~~</code>
+                                </td>
+                                <td>
+                                    Adds strikethrough effect to the text
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div>
+                    <h6>Lists</h6>
+                    <table>
+                        <tbody>
+
+                            <tr>
+                                <td>
+                                    <code>1. item1</code>
+                                </td>
+                                <td>
+                                    First ordered list item
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>2. item2</code>
+                                </td>
+                                <td>
+                                    Second ordered list item
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>⋅⋅1. Item</code>
+                                </td>
+                                <td>
+                                    Ordered sub-list item
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>* Item</code>
+                                </td>
+                                <td>
+                                    Unordered list item
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>⋅⋅* Item</code>
+                                </td>
+                                <td>
+                                    Unordered sub-list item
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div>
+                    <h6>Links</h6>
+                    <table>
+                        <tbody>
+
+                            <tr>
+                                <td>
+                                    <code>[text link](https://duckduckgo.com)</code>
+                                </td>
+                                <td>
+                                    Inline-style link
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>[text link with title](https://duckduckgo.com "DDG Home")</code>
+                                </td>
+                                <td>
+                                    Inline-style link with title
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>[Reference-style link][Arbitrary case-insensitive reference text]</code>
+                                </td>
+                                <td>
+                                    Reference style link
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>[Use numbers for reference-style link definitions][1]</code>
+                                </td>
+                                <td>
+                                    Links with a reference number. The number needs to be defined as [1]:
+                                    http://slashdot.org
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div>
+                    <h6>Images</h6>
+                    <table>
+                        <tbody>
+
+                            <tr>
+                                <td>
+                                    <code>![alt text](https://github.com/n48.png "Logo Title")</code>
+                                </td>
+                                <td>
+                                    Inline style
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>[alt text][logo]</code>
+                                </td>
+                                <td>
+                                    The reference style. Reference need to be declared as [logo]:
+                                    https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png
+                                    "Logo Title Text 2"
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div>
+                    <h6>Headers</h6>
+                    <table>
+                        <tbody>
+
+                            <tr>
+                                <td>
+                                    <code># Heading</code>
+                                </td>
+                                <td>
+                                    H1
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>## Heading</code>
+                                </td>
+                                <td>
+                                    H2
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>### Heading</code>
+                                </td>
+                                <td>
+                                    H3
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>#### Heading</code>
+                                </td>
+                                <td>
+                                    H4
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>##### Heading</code>
+                                </td>
+                                <td>
+                                    H5
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>###### Heading</code>
+                                </td>
+                                <td>
+                                    H6
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+                <div>
+                    <h6>Code and Syntax Highlighting</h6>
+                    <table>
+                        <tbody>
+
+                            <tr>
+                                <td>
+                                    <code>`code`</code>
+                                </td>
+                                <td>
+                                    Inline code has back-ticks around it
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <code>``` Code blocks  ```</code>
+                                </td>
+                                <td>
+                                    Blocks of code are either fenced by lines with three back-ticks or are indented with
+                                    four spaces
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div>
+                    <h6 >Blockquotes</h6>
+                    <table>
+                        <tbody>
+
+                            <tr>
+                                <td>
+                                    <code>&gt; Blockquotes</code>
+                                </td>
+                                <td>
+                                    Blockquotes are very handy in email to emulate reply text
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div>
+                    <h6 >Inline HTML</h6>
+                    <table>
+                        <tbody>
+
+                            <tr>
+                                <td>
+                                    <code>&lt;ul&gt;list&lt;/ul&gt;</code>
+                                </td>
+                                <td>
+                                    You can use the raw HTML in your Markdown
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div>
+                    <h6 >Horizontal Rule</h6>
+                    <table>
+                        <tbody>
+
+                            <tr>
+                                <td>
+                                    <code>---</code>
+                                </td>
+                                <td>
+                                    You can get a horizontal rule by typing three or more hyphens (-), asterisks (*) or
+                                    underscore (_)
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>

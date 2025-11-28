@@ -1,0 +1,11 @@
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
+}
+
+.sheetsheet h6 {
+    margin: 5px;
+}

@@ -1,6 +1,13 @@
-<h1>All files</h1>
-<ul>
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="/web/main.css">
+</head>
+<body>
+    <p>[<a href="/">home</a>][<a href="/special/RandomFile">random</a>][<a href="/special/AllFiles">all</a>]</p>
+    <h1>All files</h1>
+    <ul>
     {{range .}}
-    <li><a href="/view/{{ .}}">{{ .}}</a></li>
+        <li><a href="/view/{{ .}}">{{ .}}</a></li>
     {{end}}
-</ul>
+    </ul>
+</body>
