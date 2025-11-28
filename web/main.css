@@ -1,3 +1,9 @@
+body {
+  font-family: system-ui;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
 .row {
   display: flex;
 }
@@ -8,4 +14,18 @@
 
 .sheetsheet h6 {
     margin: 5px;
+}
+
+table,
+th,
+td {
+  padding: 5px;
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+code {
+  display: block;
+  border: 1px solid black;
+  background-color: #ddd;
 }

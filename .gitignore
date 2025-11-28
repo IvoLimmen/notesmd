@@ -3,3 +3,4 @@
 notesmd
 *.tar
 *.tar.gz
+deploy.sh
