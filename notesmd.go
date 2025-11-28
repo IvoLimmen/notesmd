@@ -29,6 +29,8 @@ type Config struct {
 }
 
 var validPath = regexp.MustCompile("^/(edit|save|view|special|delete)/([a-zA-Z0-9\\s]+)$")
+var links = regexp.MustCompile("\\{([a-zA-Z0-9\\s]+)\\}")
+
 var tmplFiles = []string{
 	"web/templates/header.html",
 	"web/templates/menu.html",
@@ -63,7 +65,16 @@ func loadPage(title string, config Config) (*Page, error) {
 	}
 
 	html := markdown.ToHTML(raw, nil, nil)
-	sanitized := bluemonday.UGCPolicy().SanitizeBytes(html)
+	sanitized := string(bluemonday.UGCPolicy().SanitizeBytes(html))
+
+	// subst
+	found := links.FindAllString(sanitized, -1)
+	for _, link := range found {
+		newlink := link[1 : len(link)-1]
+		linkHtml := fmt.Sprintf("<a href=\"/view/%s\">%s</a>", newlink, newlink)
+		sanitized = strings.Replace(sanitized, link, linkHtml, -1)
+	}
+
 	body := template.HTML(sanitized)
 
 	return &Page{Title: title, Body: body, Raw: raw}, nil
