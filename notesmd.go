@@ -28,7 +28,7 @@ type Config struct {
 	AllFiles []string
 }
 
-var validPath = regexp.MustCompile("^/(edit|save|view|special)/([a-zA-Z0-9\\s]+)$")
+var validPath = regexp.MustCompile("^/(edit|save|view|special|delete)/([a-zA-Z0-9\\s]+)$")
 var tmplFiles = []string{
 	"web/templates/header.html",
 	"web/templates/edit.html",
@@ -40,6 +40,17 @@ var templates = template.Must(template.ParseFiles(tmplFiles...))
 func (p *Page) save(config Config) error {
 	filename := filepath.Join(config.DataDir, p.Title+".md")
 	return os.WriteFile(filename, p.Raw, 0600)
+}
+
+func deletePage(title string, config Config) (bool, error) {
+	filename := filepath.Join(config.DataDir, title+".md")
+	err := os.Remove(filename)
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func loadPage(title string, config Config) (*Page, error) {
@@ -82,6 +93,16 @@ func saveHandler(w http.ResponseWriter, r *http.Request, title string, config Co
 		return
 	}
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
+}
+
+func deleteHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
+	ok, err := deletePage(title, config)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	if ok {
+		http.Redirect(w, r, "/view/Index", http.StatusFound)
+	}
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
@@ -152,6 +173,7 @@ func main() {
 	http.HandleFunc("/view/", makeHandler(viewHandler, config))
 	http.HandleFunc("/edit/", makeHandler(editHandler, config))
 	http.HandleFunc("/save/", makeHandler(saveHandler, config))
+	http.HandleFunc("/delete/", makeHandler(deleteHandler, config))
 	http.HandleFunc("/special/", makeHandler(specialHandler, config))
 
 	http.Handle("/web/", http.StripPrefix("/web", http.FileServer(http.Dir("./web"))))
