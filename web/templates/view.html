@@ -3,6 +3,6 @@
     <link rel="stylesheet" href="/web/main.css">
 </head>
 <body>
-    <p>[<a href="/">home</a>][<a href="/special/RandomFile">random</a>][<a href="/special/AllFiles">all</a>][<a href="/edit/{{.Title}}">edit</a>]</p>
+    {{template "header" .}}    
     {{.Body}}
 </body>

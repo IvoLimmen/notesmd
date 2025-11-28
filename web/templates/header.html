@@ -1,0 +1,10 @@
+{{ define "header" }}
+<p>
+    [<a href="/">home</a>]
+    [<a href="/special/RandomFile">random</a>]
+    [<a href="/special/AllFiles">all</a>]
+{{ if .Title}}
+    [<a href="/edit/{{.Title}}">edit</a>]
+{{ end }}    
+</p>
+{{- end }}

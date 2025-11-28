@@ -3,10 +3,10 @@
     <link rel="stylesheet" href="/web/main.css">
 </head>
 <body>
-    <p>[<a href="/">home</a>][<a href="/special/RandomFile">random</a>][<a href="/special/AllFiles">all</a>]</p>
+    {{template "header" .}}
     <h1>All files</h1>
     <ul>
-    {{range .}}
+    {{range .Files}}
         <li><a href="/view/{{ .}}">{{ .}}</a></li>
     {{end}}
     </ul>

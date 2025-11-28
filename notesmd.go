@@ -29,7 +29,13 @@ type Config struct {
 }
 
 var validPath = regexp.MustCompile("^/(edit|save|view|special)/([a-zA-Z0-9\\s]+)$")
-var templates = template.Must(template.ParseFiles("web/templates/edit.html", "web/templates/view.html", "web/templates/allfiles.html"))
+var tmplFiles = []string{
+	"web/templates/header.html",
+	"web/templates/edit.html",
+	"web/templates/view.html",
+	"web/templates/allfiles.html",
+}
+var templates = template.Must(template.ParseFiles(tmplFiles...))
 
 func (p *Page) save(config Config) error {
 	filename := filepath.Join(config.DataDir, p.Title+".md")
@@ -90,7 +96,10 @@ func specialHandler(w http.ResponseWriter, r *http.Request, title string, config
 	switch title {
 	case "AllFiles":
 		files := listFiles(config)
-		err := templates.ExecuteTemplate(w, "allfiles.html", files)
+		err := templates.ExecuteTemplate(w, "allfiles.html", struct {
+			Title string
+			Files []string
+		}{Title: "", Files: files})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
