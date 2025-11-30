@@ -16,6 +16,17 @@ body {
     margin: 5px;
 }
 
+.nav form {
+  width: max-content;
+  display: inline-block;
+}
+
+.nav {
+  padding: 5px;
+  background-color: #eee;
+  border: 1px solid black;
+}
+
 table,
 th,
 td {
