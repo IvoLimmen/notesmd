@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"math/rand/v2"
 	"net/http"
@@ -14,9 +15,14 @@ import (
 	"strings"
 
 	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/ast"
+	mdhtml "github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
-	"github.com/microcosm-cc/bluemonday"
+
+	"github.com/alecthomas/chroma/v2"
+	"github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
 )
 
 type Page struct {
@@ -32,6 +38,8 @@ type Config struct {
 
 var validPath = regexp.MustCompile("^/(edit|save|view|special|delete)/([a-zA-Z0-9\\s]+)$")
 var links = regexp.MustCompile("\\{([a-zA-Z0-9\\s]+)\\}")
+var htmlFormatter *html.Formatter
+var highlightStyle *chroma.Style
 
 var tmplFiles = []string{
 	"web/templates/header.html",
@@ -58,6 +66,41 @@ func deletePage(title string, config Config) (bool, error) {
 	return true, nil
 }
 
+func htmlHighlight(w io.Writer, source, lang, defaultLang string) error {
+	if lang == "" {
+		lang = defaultLang
+	}
+	l := lexers.Get(lang)
+	if l == nil {
+		l = lexers.Analyse(source)
+	}
+	if l == nil {
+		l = lexers.Fallback
+	}
+	l = chroma.Coalesce(l)
+
+	it, err := l.Tokenise(nil, source)
+	if err != nil {
+		return err
+	}
+
+	return htmlFormatter.Format(w, highlightStyle, it)
+}
+
+func renderCode(w io.Writer, codeBlock *ast.CodeBlock, _ bool) {
+	defaultLang := ""
+	lang := string(codeBlock.Info)
+	htmlHighlight(w, string(codeBlock.Literal), lang, defaultLang)
+}
+
+func myRenderHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+	if code, ok := node.(*ast.CodeBlock); ok {
+		renderCode(w, code, entering)
+		return ast.GoToNext, true
+	}
+	return ast.GoToNext, false
+}
+
 func mdToHTML(md []byte) []byte {
 	// create markdown parser with extensions
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock | parser.DefinitionLists
@@ -65,9 +108,12 @@ func mdToHTML(md []byte) []byte {
 	doc := p.Parse(md)
 
 	// create HTML renderer with extensions
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank | html.TOC
-	opts := html.RendererOptions{Flags: htmlFlags}
-	renderer := html.NewRenderer(opts)
+	htmlFlags := mdhtml.CommonFlags | mdhtml.HrefTargetBlank | mdhtml.TOC
+	opts := mdhtml.RendererOptions{
+		Flags:          htmlFlags,
+		RenderNodeHook: myRenderHook,
+	}
+	renderer := mdhtml.NewRenderer(opts)
 
 	return markdown.Render(doc, renderer)
 }
@@ -80,18 +126,17 @@ func loadPage(title string, config Config) (*Page, error) {
 		return nil, err
 	}
 
-	html := mdToHTML(raw)
-	sanitized := string(bluemonday.UGCPolicy().SanitizeBytes(html))
+	html := string(mdToHTML(raw))
 
 	// subst
-	found := links.FindAllString(sanitized, -1)
+	found := links.FindAllString(html, -1)
 	for _, link := range found {
 		newlink := link[1 : len(link)-1]
 		linkHtml := fmt.Sprintf("<a href=\"/view/%s\">%s</a>", newlink, newlink)
-		sanitized = strings.Replace(sanitized, link, linkHtml, -1)
+		html = strings.Replace(html, link, linkHtml, -1)
 	}
 
-	body := template.HTML(sanitized)
+	body := template.HTML(html)
 
 	return &Page{Title: title, Body: body, Raw: raw}, nil
 }
@@ -190,10 +235,22 @@ func listFiles(config Config) []string {
 func main() {
 	dataDir := flag.String("data_dir", "notes", "Path to the directory where all the markdown files are stored.")
 	port := flag.Int("port", 8080, "Port to run the webserver on.")
+	style := flag.String("code_style", "monokai", "Code highlighting format to use; default is Monokai")
 
 	flag.Parse()
 
-	fmt.Printf("NotesMD, running on port %d, using directory %s", *port, *dataDir)
+	fmt.Printf("NotesMD, running on port %d, using directory %s, using code style %s\n", *port, *dataDir, *style)
+
+	htmlFormatter = html.New(html.TabWidth(2), html.PreventSurroundingPre(false))
+
+	if htmlFormatter == nil {
+		panic("couldn't create html formatter")
+	}
+	highlightStyle = styles.Get(*style)
+
+	if highlightStyle == nil {
+		panic(fmt.Sprintf("didn't find style '%s'", highlightStyle.Name))
+	}
 
 	config := Config{DataDir: "undefined"}
 	config.DataDir = *dataDir
