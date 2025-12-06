@@ -14,6 +14,8 @@ import (
 	"strings"
 
 	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
 	"github.com/microcosm-cc/bluemonday"
 )
 
@@ -56,6 +58,20 @@ func deletePage(title string, config Config) (bool, error) {
 	return true, nil
 }
 
+func mdToHTML(md []byte) []byte {
+	// create markdown parser with extensions
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock | parser.DefinitionLists
+	p := parser.NewWithExtensions(extensions)
+	doc := p.Parse(md)
+
+	// create HTML renderer with extensions
+	htmlFlags := html.CommonFlags | html.HrefTargetBlank | html.TOC
+	opts := html.RendererOptions{Flags: htmlFlags}
+	renderer := html.NewRenderer(opts)
+
+	return markdown.Render(doc, renderer)
+}
+
 func loadPage(title string, config Config) (*Page, error) {
 	filename := filepath.Join(config.DataDir, title+".md")
 	raw, err := os.ReadFile(filename)
@@ -64,7 +80,7 @@ func loadPage(title string, config Config) (*Page, error) {
 		return nil, err
 	}
 
-	html := markdown.ToHTML(raw, nil, nil)
+	html := mdToHTML(raw)
 	sanitized := string(bluemonday.UGCPolicy().SanitizeBytes(html))
 
 	// subst
