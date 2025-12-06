@@ -39,4 +39,10 @@ code {
   display: block;
   border: 1px solid black;
   background-color: #eee;
+  overflow-y: scroll;
+}
+
+.main {
+  max-width: min(120ch, 100% - 3rem);
+  margin-inline: auto;
 }

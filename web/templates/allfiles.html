@@ -1,10 +1,12 @@
 {{template "header" .}}
 <body>
     {{template "menu" .}}
-    <h1>All files</h1>
-    <ul>
-    {{range .Files}}
-        <li><a href="/view/{{ .}}">{{ .}}</a></li>
-    {{end}}
-    </ul>
+    <div class="main">
+        <h1>All files</h1>
+        <ul>
+        {{range .Files}}
+            <li><a href="/view/{{ .}}">{{ .}}</a></li>
+        {{end}}
+        </ul>
+    </div>
 </body>
