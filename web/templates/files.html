@@ -2,7 +2,7 @@
 <body>
     {{template "menu" .}}
     <div class="main">
-        <h1>All files</h1>
+        <h1>Files</h1>
         <ul>
         {{range .Files}}
             <li><a href="/view/{{ .}}">{{ .}}</a></li>

@@ -46,7 +46,7 @@ var tmplFiles = []string{
 	"web/templates/menu.html",
 	"web/templates/edit.html",
 	"web/templates/view.html",
-	"web/templates/allfiles.html",
+	"web/templates/files.html",
 }
 var templates = template.Must(template.ParseFiles(tmplFiles...))
 
@@ -186,17 +186,26 @@ func editHandler(w http.ResponseWriter, r *http.Request, title string, config Co
 	renderTemplate(w, "edit", p)
 }
 
+func showFiles(w http.ResponseWriter, files []string, title string) {
+	err := templates.ExecuteTemplate(w, "files.html", struct {
+		Title string
+		Files []string
+	}{Title: title, Files: files})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func specialHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
 	switch title {
 	case "AllFiles":
 		files := listFiles(config)
-		err := templates.ExecuteTemplate(w, "allfiles.html", struct {
-			Title string
-			Files []string
-		}{Title: "", Files: files})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		showFiles(w, files, "All files")
+	case "SearchFiles":
+		criteria := r.FormValue("search")
+		files := search(listFiles(config), criteria)
+		title := fmt.Sprintf("Files found with '%s'", criteria)
+		showFiles(w, files, title)
 	case "RandomFile":
 		files := listFiles(config)
 		file := files[rand.IntN(len(files))]
@@ -230,6 +239,16 @@ func listFiles(config Config) []string {
 	}
 
 	return files
+}
+
+func search(list []string, criteria string) []string {
+	var found []string
+	for _, entry := range list {
+		if strings.Contains(strings.ToLower(entry), strings.ToLower(criteria)) {
+			found = append(found, entry)
+		}
+	}
+	return found
 }
 
 func main() {
