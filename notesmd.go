@@ -6,12 +6,10 @@ import (
 	"html/template"
 	"io"
 	"log"
-	"math/rand/v2"
 	"net/http"
-	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
@@ -29,7 +27,6 @@ type Config struct {
 	AllFiles []string
 }
 
-var validPath = regexp.MustCompile("^/(edit|save|view|special|delete)/([a-zA-Z0-9\\s]+)$")
 var links = regexp.MustCompile("\\{([a-zA-Z0-9\\s]+)\\}")
 var htmlFormatter *html.Formatter
 var highlightStyle *chroma.Style
@@ -40,6 +37,7 @@ var tmplFiles = []string{
 	"web/templates/edit.html",
 	"web/templates/view.html",
 	"web/templates/files.html",
+	"web/templates/attachments.html",
 }
 var templates = template.Must(template.ParseFiles(tmplFiles...))
 
@@ -102,50 +100,6 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	}
 }
 
-func specialHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
-	switch title {
-	case "AllFiles":
-		files := listFiles(config)
-		showFiles(w, files, "All files")
-	case "SearchFiles":
-		criteria := r.FormValue("search")
-		files := search(listFiles(config), criteria)
-		title := fmt.Sprintf("Files found with '%s'", criteria)
-		showFiles(w, files, title)
-	case "RandomFile":
-		files := listFiles(config)
-		file := files[rand.IntN(len(files))]
-		http.Redirect(w, r, "/view/"+file, http.StatusFound)
-	default:
-		http.Redirect(w, r, "/view/Index", http.StatusFound)
-	}
-}
-
-func listFiles(config Config) []string {
-	entries, err := os.ReadDir(config.DataDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var files []string
-	for _, e := range entries {
-		base := strings.Split(e.Name(), ".")[0]
-		files = append(files, base)
-	}
-
-	return files
-}
-
-func search(list []string, criteria string) []string {
-	var found []string
-	for _, entry := range list {
-		if strings.Contains(strings.ToLower(entry), strings.ToLower(criteria)) {
-			found = append(found, entry)
-		}
-	}
-	return found
-}
-
 func main() {
 	dataDir := flag.String("data_dir", "notes", "Path to the directory where all the markdown files are stored.")
 	port := flag.Int("port", 8080, "Port to run the webserver on.")
@@ -169,6 +123,10 @@ func main() {
 	config := Config{DataDir: "undefined"}
 	config.DataDir = *dataDir
 
+	http.HandleFunc("/upload/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fileUploadHandler(w, r, config)
+	}))
+
 	http.HandleFunc("/view/", makeHandler(viewHandler, config))
 	http.HandleFunc("/edit/", makeHandler(editHandler, config))
 	http.HandleFunc("/save/", makeHandler(saveHandler, config))
@@ -176,6 +134,9 @@ func main() {
 	http.HandleFunc("/special/", makeHandler(specialHandler, config))
 
 	http.Handle("/web/", http.StripPrefix("/web", http.FileServer(http.Dir("./web"))))
+
+	dir := filepath.Join(config.DataDir, "att")
+	http.Handle("/att/", http.StripPrefix("/att", http.FileServer(http.Dir(dir))))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/view/Index", http.StatusFound)

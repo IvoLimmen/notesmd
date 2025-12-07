@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -62,4 +63,66 @@ func showFiles(w http.ResponseWriter, files []string, title string) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func createFile(filename string, config Config) (*os.File, error) {
+	dir := filepath.Join(config.DataDir, "att")
+	file := filepath.Join(dir, filename)
+
+	// Create an uploads directory if it doesn’t exist
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, 0755)
+	}
+
+	// Build the file path and create it
+	dst, err := os.Create(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return dst, nil
+}
+
+func listFiles(config Config) []string {
+	entries, err := os.ReadDir(config.DataDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var files []string
+	for _, e := range entries {
+		if !e.IsDir() {
+			base := strings.Split(e.Name(), ".")[0]
+			files = append(files, base)
+		}
+	}
+
+	return files
+}
+
+func listAttachments(config Config) []string {
+	dir := filepath.Join(config.DataDir, "att")
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var files []string
+	for _, e := range entries {
+		if !e.IsDir() {
+			files = append(files, e.Name())
+		}
+	}
+
+	return files
+}
+
+func search(list []string, criteria string) []string {
+	var found []string
+	for _, entry := range list {
+		if strings.Contains(strings.ToLower(entry), strings.ToLower(criteria)) {
+			found = append(found, entry)
+		}
+	}
+	return found
 }

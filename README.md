@@ -12,6 +12,7 @@ Yes there are a lot of markdown style note taking applications and I tried a few
 * Has syntax highlighting for code blocks.
 * Simple file search
 * Editing page is simple but has a nice cheatsheet
+* Uploading, removing attachments (meant for images)
 
 ## Building app
 

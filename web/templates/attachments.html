@@ -1,0 +1,36 @@
+{{template "header" .}}
+<body>
+    {{template "menu" .}}
+    <div class="main">
+        <div class="row">
+            <div class="column">
+                <h1>Attachments</h1>
+
+                <form action="/upload/" method="POST" enctype="multipart/form-data">
+                    <div><input type="file" name="file"></div>
+                    <div><input type="submit" value="Upload"></div>
+                </form>
+            </div>
+            
+            <div class="column">
+                <table>
+                    <thead>
+                        <tr>
+                            <td colspan="2">Available attachments</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Files}}
+                        <tr>
+                            <td>
+                                <code>![alt text](/att/{{ .}} "{{ .}}")</code>
+                            </td>
+                            <td>[<a href="/special/DelAtt/{{ .}}">delete</a>]</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</details>
