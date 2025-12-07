@@ -17,11 +17,15 @@ Yes there are a lot of markdown style note taking applications and I tried a few
 
     go build notesmd.go
 
-    If you use the buid.sh script it will build and package the app in a tar for Linux on amd64 & arm64.
+If you use the buid.sh script it will build and package the app in a tar for Linux on amd64 & arm64.
 
 ## Running the application
 
     ./notesmd
+
+Or type:
+
+    go run .
 
 ### Arguments
 

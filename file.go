@@ -1,0 +1,65 @@
+package main
+
+import (
+	"fmt"
+	"html/template"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+type Page struct {
+	Title string
+	Body  template.HTML
+	Raw   []byte
+}
+
+func (p *Page) save(config Config) error {
+	filename := filepath.Join(config.DataDir, p.Title+".md")
+	return os.WriteFile(filename, p.Raw, 0600)
+}
+
+func deletePage(title string, config Config) (bool, error) {
+	filename := filepath.Join(config.DataDir, title+".md")
+	err := os.Remove(filename)
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func loadPage(title string, config Config) (*Page, error) {
+	filename := filepath.Join(config.DataDir, title+".md")
+	raw, err := os.ReadFile(filename)
+
+	if err != nil {
+		return nil, err
+	}
+
+	html := string(mdToHTML(raw))
+
+	// subst
+	found := links.FindAllString(html, -1)
+	for _, link := range found {
+		newlink := link[1 : len(link)-1]
+		linkHtml := fmt.Sprintf("<a href=\"/view/%s\">%s</a>", newlink, newlink)
+		html = strings.Replace(html, link, linkHtml, -1)
+	}
+
+	body := template.HTML(html)
+
+	return &Page{Title: title, Body: body, Raw: raw}, nil
+}
+
+func showFiles(w http.ResponseWriter, files []string, title string) {
+	err := templates.ExecuteTemplate(w, "files.html", struct {
+		Title string
+		Files []string
+	}{Title: title, Files: files})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}

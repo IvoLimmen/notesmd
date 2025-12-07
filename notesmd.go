@@ -9,7 +9,6 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,12 +23,6 @@ import (
 	"github.com/alecthomas/chroma/v2/lexers"
 	"github.com/alecthomas/chroma/v2/styles"
 )
-
-type Page struct {
-	Title string
-	Body  template.HTML
-	Raw   []byte
-}
 
 type Config struct {
 	DataDir  string
@@ -49,22 +42,6 @@ var tmplFiles = []string{
 	"web/templates/files.html",
 }
 var templates = template.Must(template.ParseFiles(tmplFiles...))
-
-func (p *Page) save(config Config) error {
-	filename := filepath.Join(config.DataDir, p.Title+".md")
-	return os.WriteFile(filename, p.Raw, 0600)
-}
-
-func deletePage(title string, config Config) (bool, error) {
-	filename := filepath.Join(config.DataDir, title+".md")
-	err := os.Remove(filename)
-
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
-}
 
 func htmlHighlight(w io.Writer, source, lang, defaultLang string) error {
 	if lang == "" {
@@ -118,79 +95,8 @@ func mdToHTML(md []byte) []byte {
 	return markdown.Render(doc, renderer)
 }
 
-func loadPage(title string, config Config) (*Page, error) {
-	filename := filepath.Join(config.DataDir, title+".md")
-	raw, err := os.ReadFile(filename)
-
-	if err != nil {
-		return nil, err
-	}
-
-	html := string(mdToHTML(raw))
-
-	// subst
-	found := links.FindAllString(html, -1)
-	for _, link := range found {
-		newlink := link[1 : len(link)-1]
-		linkHtml := fmt.Sprintf("<a href=\"/view/%s\">%s</a>", newlink, newlink)
-		html = strings.Replace(html, link, linkHtml, -1)
-	}
-
-	body := template.HTML(html)
-
-	return &Page{Title: title, Body: body, Raw: raw}, nil
-}
-
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", p)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func viewHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
-	p, err := loadPage(title, config)
-	if err != nil {
-		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
-		return
-	}
-	renderTemplate(w, "view", p)
-}
-
-func saveHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
-	body := r.FormValue("body")
-	p := &Page{Title: title, Raw: []byte(body)}
-	err := p.save(config)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	http.Redirect(w, r, "/view/"+title, http.StatusFound)
-}
-
-func deleteHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
-	ok, err := deletePage(title, config)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	if ok {
-		http.Redirect(w, r, "/view/Index", http.StatusFound)
-	}
-}
-
-func editHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
-	p, err := loadPage(title, config)
-	if err != nil {
-		p = &Page{Title: title}
-	}
-	renderTemplate(w, "edit", p)
-}
-
-func showFiles(w http.ResponseWriter, files []string, title string) {
-	err := templates.ExecuteTemplate(w, "files.html", struct {
-		Title string
-		Files []string
-	}{Title: title, Files: files})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -212,17 +118,6 @@ func specialHandler(w http.ResponseWriter, r *http.Request, title string, config
 		http.Redirect(w, r, "/view/"+file, http.StatusFound)
 	default:
 		http.Redirect(w, r, "/view/Index", http.StatusFound)
-	}
-}
-
-func makeHandler(fn func(http.ResponseWriter, *http.Request, string, Config), config Config) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		m := validPath.FindStringSubmatch(r.URL.Path)
-		if m == nil {
-			http.NotFound(w, r)
-			return
-		}
-		fn(w, r, m[2], config)
 	}
 }
 
