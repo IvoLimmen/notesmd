@@ -10,8 +10,8 @@ import (
 	"strings"
 )
 
-var validPath = regexp.MustCompile("^/(edit|save|view|delete)/([a-zA-Z0-9\\s]+)$")
-var special = regexp.MustCompile("^/(special)/")
+var validPath = regexp.MustCompile(`^/(edit|save|view|delete)/([a-zA-Z0-9\s]+)$`)
+var special = regexp.MustCompile(`^/(special)/`)
 
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string, Config), config Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -124,7 +124,6 @@ func specialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 	case "DelAtt":
 		dir := filepath.Join(config.DataDir, "att")
 		filename := filepath.Join(dir, parts[2])
-		println(filename)
 		os.Remove(filename)
 		http.Redirect(w, r, "/special/Attachments", http.StatusFound)
 	case "RandomFile":

@@ -27,7 +27,7 @@ type Config struct {
 	AllFiles []string
 }
 
-var links = regexp.MustCompile("\\{([a-zA-Z0-9\\s]+)\\}")
+var links = regexp.MustCompile(`{([a-zA-Z0-9\s]+)}`)
 var htmlFormatter *html.Formatter
 var highlightStyle *chroma.Style
 
