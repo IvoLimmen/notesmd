@@ -22,6 +22,12 @@ import (
 	"github.com/alecthomas/chroma/v2/styles"
 )
 
+type TemplateView struct {
+	Title   string
+	Files   []string
+	Special bool
+}
+
 type Config struct {
 	DataDir  string
 	AllFiles []string

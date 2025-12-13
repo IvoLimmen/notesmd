@@ -97,10 +97,7 @@ func fileUploadHandler(w http.ResponseWriter, r *http.Request, config Config) {
 
 func showAttachments(w http.ResponseWriter, config Config) {
 	files := listAttachments(config)
-	err := templates.ExecuteTemplate(w, "attachments.html", struct {
-		Title string
-		Files []string
-	}{Title: "Attachments", Files: files})
+	err := templates.ExecuteTemplate(w, "attachments.html", TemplateView{Title: "Attachments", Files: files, Special: true})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -113,12 +110,12 @@ func specialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 	switch command {
 	case "AllFiles":
 		files := listFiles(config)
-		showFiles(w, files, "All files")
+		showFiles(w, files, "All files", true)
 	case "SearchFiles":
 		criteria := r.FormValue("search")
 		files := search(listFiles(config), criteria)
 		title := fmt.Sprintf("Files found with '%s'", criteria)
-		showFiles(w, files, title)
+		showFiles(w, files, title, true)
 	case "Attachments":
 		showAttachments(w, config)
 	case "DelAtt":

@@ -11,9 +11,10 @@ import (
 )
 
 type Page struct {
-	Title string
-	Body  template.HTML
-	Raw   []byte
+	Title   string
+	Body    template.HTML
+	Raw     []byte
+	Special bool
 }
 
 func (p *Page) save(config Config) error {
@@ -52,14 +53,11 @@ func loadPage(title string, config Config) (*Page, error) {
 
 	body := template.HTML(html)
 
-	return &Page{Title: title, Body: body, Raw: raw}, nil
+	return &Page{Title: title, Body: body, Raw: raw, Special: false}, nil
 }
 
-func showFiles(w http.ResponseWriter, files []string, title string) {
-	err := templates.ExecuteTemplate(w, "files.html", struct {
-		Title string
-		Files []string
-	}{Title: title, Files: files})
+func showFiles(w http.ResponseWriter, files []string, title string, special bool) {
+	err := templates.ExecuteTemplate(w, "files.html", TemplateView{Title: title, Files: files, Special: special})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
