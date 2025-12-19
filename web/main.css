@@ -35,10 +35,15 @@ td {
   border-collapse: collapse;
 }
 
-code {
+pre code { 
   display: block;
   border: 1px solid black;
   overflow-y: scroll;
+}
+
+p code {
+  font-family: 'Courier New', Courier, monospace;
+  border: 1px dashed black;
 }
 
 .main {
