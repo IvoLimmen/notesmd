@@ -24,7 +24,7 @@ import (
 
 type TemplateView struct {
 	Title   string
-	Files   []string
+	Files   []ExistingFile
 	Special bool
 }
 

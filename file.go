@@ -17,6 +17,11 @@ type Page struct {
 	Special bool
 }
 
+type ExistingFile struct {
+	FileName string
+	Exists   bool
+}
+
 func (p *Page) save(config Config) error {
 	filename := filepath.Join(config.DataDir, p.Title+".md")
 	return os.WriteFile(filename, p.Raw, 0600)
@@ -56,7 +61,7 @@ func loadPage(title string, config Config) (*Page, error) {
 	return &Page{Title: title, Body: body, Raw: raw, Special: false}, nil
 }
 
-func showFiles(w http.ResponseWriter, files []string, title string, special bool) {
+func showFiles(w http.ResponseWriter, files []ExistingFile, title string, special bool) {
 	err := templates.ExecuteTemplate(w, "files.html", TemplateView{Title: title, Files: files, Special: special})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -81,44 +86,44 @@ func createFile(filename string, config Config) (*os.File, error) {
 	return dst, nil
 }
 
-func listFiles(config Config) []string {
+func listFiles(config Config) []ExistingFile {
 	entries, err := os.ReadDir(config.DataDir)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var files []string
+	var files []ExistingFile
 	for _, e := range entries {
 		if !e.IsDir() {
 			base := strings.Split(e.Name(), ".")[0]
-			files = append(files, base)
+			files = append(files, ExistingFile{FileName: base, Exists: true})
 		}
 	}
 
 	return files
 }
 
-func listAttachments(config Config) []string {
+func listAttachments(config Config) []ExistingFile {
 	dir := filepath.Join(config.DataDir, "att")
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var files []string
+	var files []ExistingFile
 	for _, e := range entries {
 		if !e.IsDir() {
-			files = append(files, e.Name())
+			files = append(files, ExistingFile{FileName: e.Name(), Exists: true})
 		}
 	}
 
 	return files
 }
 
-func search(list []string, criteria string) []string {
-	var found []string
+func search(list []ExistingFile, criteria string) []ExistingFile {
+	var found []ExistingFile
 	for _, entry := range list {
-		if strings.Contains(strings.ToLower(entry), strings.ToLower(criteria)) {
+		if strings.Contains(strings.ToLower(entry.FileName), strings.ToLower(criteria)) {
 			found = append(found, entry)
 		}
 	}

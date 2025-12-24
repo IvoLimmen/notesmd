@@ -5,7 +5,11 @@
         <h1>Files</h1>
         <ul>
         {{range .Files}}
-            <li><a href="/view/{{ .}}">{{ .}}</a></li>
+        {{ if .Exists }}
+            <li><a href="/view/{{ .FileName }}">{{ .FileName }}</a></li>
+        {{ else }}
+            <li><a href="/edit/{{ .FileName }}">{{ .FileName }} (create)</a></li>
+        {{ end }}
         {{end}}
         </ul>
     </div>

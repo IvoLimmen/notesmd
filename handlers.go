@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var validPath = regexp.MustCompile(`^/(edit|save|view|delete)/([a-zA-Z0-9\s]+)$`)
@@ -114,6 +117,8 @@ func specialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 	case "SearchFiles":
 		criteria := r.FormValue("search")
 		files := search(listFiles(config), criteria)
+		caser := cases.Title(language.English)
+		files = append(files, ExistingFile{FileName: caser.String(criteria), Exists: false})
 		title := fmt.Sprintf("Files found with '%s'", criteria)
 		showFiles(w, files, title, true)
 	case "Attachments":
@@ -126,7 +131,7 @@ func specialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 	case "RandomFile":
 		files := listFiles(config)
 		file := files[rand.IntN(len(files))]
-		http.Redirect(w, r, "/view/"+file, http.StatusFound)
+		http.Redirect(w, r, "/view/"+file.FileName, http.StatusFound)
 	default:
 		http.Redirect(w, r, "/view/Index", http.StatusFound)
 	}
