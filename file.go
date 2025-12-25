@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"html/template"
 	"log"
@@ -20,6 +21,7 @@ type Page struct {
 type ExistingFile struct {
 	FileName string
 	Exists   bool
+	Hits     int
 }
 
 func (p *Page) save(config Config) error {
@@ -61,8 +63,8 @@ func loadPage(title string, config Config) (*Page, error) {
 	return &Page{Title: title, Body: body, Raw: raw, Special: false}, nil
 }
 
-func showFiles(w http.ResponseWriter, files []ExistingFile, title string, special bool) {
-	err := templates.ExecuteTemplate(w, "files.html", TemplateView{Title: title, Files: files, Special: special})
+func showFiles(w http.ResponseWriter, templateView TemplateView) {
+	err := templates.ExecuteTemplate(w, "files.html", templateView)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -120,10 +122,20 @@ func listAttachments(config Config) []ExistingFile {
 	return files
 }
 
-func search(list []ExistingFile, criteria string) ([]ExistingFile, bool) {
+func search(list []ExistingFile, criteria string, config Config) ([]ExistingFile, bool) {
 	var found []ExistingFile
 	var completeMatch = false
+
+	// filename matches
 	for _, entry := range list {
+
+		if len(criteria) > 2 {
+			hits := contentSearch(entry, criteria, config)
+			if hits > 0 {
+				found = append(found, ExistingFile{FileName: entry.FileName, Exists: entry.Exists, Hits: hits})
+			}
+		}
+
 		if strings.Contains(strings.ToLower(entry.FileName), strings.ToLower(criteria)) {
 			if strings.EqualFold(strings.ToLower(entry.FileName), strings.ToLower(criteria)) {
 				completeMatch = true
@@ -131,5 +143,33 @@ func search(list []ExistingFile, criteria string) ([]ExistingFile, bool) {
 			found = append(found, entry)
 		}
 	}
+
 	return found, completeMatch
+}
+
+func contentSearch(file ExistingFile, criteria string, config Config) int {
+	filename := filepath.Join(config.DataDir, file.FileName+".md")
+	f, err := os.Open(filename)
+
+	if err != nil {
+		return 0
+	}
+	defer f.Close()
+
+	// Splits on newlines by default.
+	scanner := bufio.NewScanner(f)
+
+	hits := 0
+
+	for scanner.Scan() {
+		if strings.Contains(strings.ToLower(scanner.Text()), strings.ToLower(criteria)) {
+			hits++
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return 0
+	}
+
+	return hits
 }

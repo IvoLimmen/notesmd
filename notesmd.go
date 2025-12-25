@@ -23,9 +23,10 @@ import (
 )
 
 type TemplateView struct {
-	Title   string
-	Files   []ExistingFile
-	Special bool
+	Title          string
+	Files          []ExistingFile
+	Special        bool
+	SearchCriteria string
 }
 
 type Config struct {

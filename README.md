@@ -10,7 +10,7 @@ Yes there are a lot of markdown style note taking applications and I tried a few
 * Markdown files (no database storage)
 * Works like a wiki, if a page does not exist it opens the editor
 * Has syntax highlighting for code blocks.
-* Simple file search
+* Simple file search and word search (minimum of 3 characters)
 * Editing page is simple but has a nice cheatsheet
 * Uploading, removing attachments (meant for images)
 
@@ -39,3 +39,4 @@ Or type:
 * It's completely based on the excellent tutorial: https://go.dev/doc/articles/wiki/.
 * Uses github.com/alecthomas/chroma/v2 for syntax highlighting.
 * Uses github.com/gomarkdown/markdown for the markdown parsing and formatting.
+* Uses golang.org/x/text for casing.

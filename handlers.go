@@ -100,7 +100,7 @@ func fileUploadHandler(w http.ResponseWriter, r *http.Request, config Config) {
 
 func showAttachments(w http.ResponseWriter, config Config) {
 	files := listAttachments(config)
-	err := templates.ExecuteTemplate(w, "attachments.html", TemplateView{Title: "Attachments", Files: files, Special: true})
+	err := templates.ExecuteTemplate(w, "attachments.html", TemplateView{Title: "Attachments", Files: files, Special: true, SearchCriteria: ""})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -113,16 +113,16 @@ func specialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 	switch command {
 	case "AllFiles":
 		files := listFiles(config)
-		showFiles(w, files, "All files", true)
+		showFiles(w, TemplateView{Title: "All Files", Files: files, Special: true, SearchCriteria: ""})
 	case "SearchFiles":
 		criteria := r.FormValue("search")
-		files, completeMatch := search(listFiles(config), criteria)
+		files, completeMatch := search(listFiles(config), criteria, config)
 		caser := cases.Title(language.English)
 		if !completeMatch {
 			files = append(files, ExistingFile{FileName: caser.String(criteria), Exists: false})
 		}
 		title := fmt.Sprintf("Files found with '%s'", criteria)
-		showFiles(w, files, title, true)
+		showFiles(w, TemplateView{Title: title, Files: files, Special: true, SearchCriteria: criteria})
 	case "Attachments":
 		showAttachments(w, config)
 	case "DelAtt":

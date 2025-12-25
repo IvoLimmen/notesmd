@@ -1,4 +1,5 @@
 {{template "header" .}}
+{{ $keyword := .SearchCriteria }}
 <body>
     {{template "menu" .}}
     <div class="main">
@@ -6,7 +7,11 @@
         <ul>
         {{range .Files}}
         {{ if .Exists }}
+        {{ if gt .Hits 0 }}
+            <li><a href="/view/{{ .FileName }}#:~:text={{ $keyword }}">{{ .FileName }} ({{ .Hits }} hits)</a></li>
+        {{ else }}
             <li><a href="/view/{{ .FileName }}">{{ .FileName }}</a></li>
+        {{ end }}
         {{ else }}
             <li><a href="/edit/{{ .FileName }}">{{ .FileName }} (create)</a></li>
         {{ end }}
