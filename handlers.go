@@ -116,9 +116,11 @@ func specialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 		showFiles(w, files, "All files", true)
 	case "SearchFiles":
 		criteria := r.FormValue("search")
-		files := search(listFiles(config), criteria)
+		files, completeMatch := search(listFiles(config), criteria)
 		caser := cases.Title(language.English)
-		files = append(files, ExistingFile{FileName: caser.String(criteria), Exists: false})
+		if !completeMatch {
+			files = append(files, ExistingFile{FileName: caser.String(criteria), Exists: false})
+		}
 		title := fmt.Sprintf("Files found with '%s'", criteria)
 		showFiles(w, files, title, true)
 	case "Attachments":

@@ -120,12 +120,16 @@ func listAttachments(config Config) []ExistingFile {
 	return files
 }
 
-func search(list []ExistingFile, criteria string) []ExistingFile {
+func search(list []ExistingFile, criteria string) ([]ExistingFile, bool) {
 	var found []ExistingFile
+	var completeMatch = false
 	for _, entry := range list {
 		if strings.Contains(strings.ToLower(entry.FileName), strings.ToLower(criteria)) {
+			if strings.EqualFold(strings.ToLower(entry.FileName), strings.ToLower(criteria)) {
+				completeMatch = true
+			}
 			found = append(found, entry)
 		}
 	}
-	return found
+	return found, completeMatch
 }
