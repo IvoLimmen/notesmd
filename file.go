@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -23,6 +24,12 @@ type ExistingFile struct {
 	Exists   bool
 	Hits     int
 }
+
+type ByName []ExistingFile
+
+func (a ByName) Len() int           { return len(a) }
+func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByName) Less(i, j int) bool { return a[i].FileName < a[j].FileName }
 
 func (p *Page) save(config Config) error {
 	filename := filepath.Join(config.DataDir, p.Title+".md")
@@ -129,20 +136,22 @@ func search(list []ExistingFile, criteria string, config Config) ([]ExistingFile
 	// filename matches
 	for _, entry := range list {
 
-		if len(criteria) > 2 {
-			hits := contentSearch(entry, criteria, config)
-			if hits > 0 {
-				found = append(found, ExistingFile{FileName: entry.FileName, Exists: entry.Exists, Hits: hits})
-			}
-		}
-
 		if strings.Contains(strings.ToLower(entry.FileName), strings.ToLower(criteria)) {
 			if strings.EqualFold(strings.ToLower(entry.FileName), strings.ToLower(criteria)) {
 				completeMatch = true
 			}
 			found = append(found, entry)
+		} else {
+			if len(criteria) > 2 {
+				hits := contentSearch(entry, criteria, config)
+				if hits > 0 {
+					found = append(found, ExistingFile{FileName: entry.FileName, Exists: entry.Exists, Hits: hits})
+				}
+			}
 		}
 	}
+
+	sort.Sort(ByName(found))
 
 	return found, completeMatch
 }
