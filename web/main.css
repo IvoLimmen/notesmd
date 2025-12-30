@@ -46,6 +46,11 @@ p code {
   border: 1px dashed black;
 }
 
+li code {
+  font-family: 'Courier New', Courier, monospace;
+  border: 1px dashed black;
+}
+
 .main {
   max-width: min(120ch, 100% - 3rem);
   margin-inline: auto;
