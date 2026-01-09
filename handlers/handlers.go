@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"fmt"
@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ivolimmen/notesmd/file"
+	"github.com/ivolimmen/notesmd/types"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -16,7 +18,7 @@ import (
 var validPath = regexp.MustCompile(`^/(edit|save|view|delete)/([a-zA-Z0-9\s]+)$`)
 var special = regexp.MustCompile(`^/(special)/`)
 
-func makeHandler(fn func(http.ResponseWriter, *http.Request, string, Config), config Config) http.HandlerFunc {
+func MakeHandler(fn func(http.ResponseWriter, *http.Request, string, types.Config), config types.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s := special.FindStringSubmatch(r.URL.Path)
 		if s == nil {
@@ -34,19 +36,19 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string, Config), co
 	}
 }
 
-func viewHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
-	p, err := loadPage(title, config)
+func ViewHandler(w http.ResponseWriter, r *http.Request, title string, config types.Config) {
+	p, err := file.LoadPage(title, config)
 	if err != nil {
 		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
 		return
 	}
-	renderTemplate(w, "view", p)
+	file.RenderTemplate(w, "view", p)
 }
 
-func saveHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
+func SaveHandler(w http.ResponseWriter, r *http.Request, title string, config types.Config) {
 	body := r.FormValue("body")
-	p := &Page{Title: title, Raw: []byte(body)}
-	err := p.save(config)
+	p := &file.Page{Title: title, Raw: []byte(body)}
+	err := file.Save(p, config)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -54,8 +56,8 @@ func saveHandler(w http.ResponseWriter, r *http.Request, title string, config Co
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
 
-func deleteHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
-	ok, err := deletePage(title, config)
+func DeleteHandler(w http.ResponseWriter, r *http.Request, title string, config types.Config) {
+	ok, err := file.DeletePage(title, config)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -64,26 +66,26 @@ func deleteHandler(w http.ResponseWriter, r *http.Request, title string, config 
 	}
 }
 
-func editHandler(w http.ResponseWriter, r *http.Request, title string, config Config) {
-	p, err := loadPage(title, config)
+func EditHandler(w http.ResponseWriter, r *http.Request, title string, config types.Config) {
+	p, err := file.LoadPage(title, config)
 	if err != nil {
-		p = &Page{Title: title}
+		p = &file.Page{Title: title}
 	}
-	renderTemplate(w, "edit", p)
+	file.RenderTemplate(w, "edit", p)
 }
 
-func fileUploadHandler(w http.ResponseWriter, r *http.Request, config Config) {
+func FileUploadHandler(w http.ResponseWriter, r *http.Request, config types.Config) {
 	r.ParseMultipartForm(10 << 20) // 10MB
 
-	file, handler, err := r.FormFile("file")
+	mpfile, handler, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
 		return
 	}
-	defer file.Close()
+	defer mpfile.Close()
 
 	// Now let’s save it locally
-	dst, err := createFile(handler.Filename, config)
+	dst, err := file.CreateFile(handler.Filename, config)
 	if err != nil {
 		http.Error(w, "Error saving the file", http.StatusInternalServerError)
 		return
@@ -91,47 +93,39 @@ func fileUploadHandler(w http.ResponseWriter, r *http.Request, config Config) {
 	defer dst.Close()
 
 	// Copy the uploaded file to the destination file
-	if _, err := dst.ReadFrom(file); err != nil {
+	if _, err := dst.ReadFrom(mpfile); err != nil {
 		http.Error(w, "Error saving the file", http.StatusInternalServerError)
 	}
 
 	http.Redirect(w, r, "/special/Attachments", http.StatusFound)
 }
 
-func showAttachments(w http.ResponseWriter, config Config) {
-	files := listAttachments(config)
-	err := templates.ExecuteTemplate(w, "attachments.html", TemplateView{Title: "Attachments", Files: files, Special: true, SearchCriteria: ""})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func specialHandler(w http.ResponseWriter, r *http.Request, path string, config Config) {
+func SpecialHandler(w http.ResponseWriter, r *http.Request, path string, config types.Config) {
 	parts := strings.Split(path[1:], "/")
 	command := parts[1]
 
 	switch command {
 	case "AllFiles":
-		files := listFiles(config)
-		showFiles(w, TemplateView{Title: "All Files", Files: files, Special: true, SearchCriteria: ""})
+		files := file.ListFiles(config)
+		file.ShowFiles(w, types.TemplateView{Title: "All Files", Files: files, Special: true, SearchCriteria: ""})
 	case "SearchFiles":
 		criteria := r.FormValue("search")
-		files, completeMatch := search(listFiles(config), criteria, config)
+		files, completeMatch := file.Search(file.ListFiles(config), criteria, config)
 		caser := cases.Title(language.English)
 		if !completeMatch {
-			files = append(files, ExistingFile{FileName: caser.String(criteria), Exists: false})
+			files = append(files, types.ExistingFile{FileName: caser.String(criteria), Exists: false})
 		}
 		title := fmt.Sprintf("Files found with '%s'", criteria)
-		showFiles(w, TemplateView{Title: title, Files: files, Special: true, SearchCriteria: criteria})
+		file.ShowFiles(w, types.TemplateView{Title: title, Files: files, Special: true, SearchCriteria: criteria})
 	case "Attachments":
-		showAttachments(w, config)
+		file.ShowAttachments(w, config)
 	case "DelAtt":
 		dir := filepath.Join(config.DataDir, "att")
 		filename := filepath.Join(dir, parts[2])
 		os.Remove(filename)
 		http.Redirect(w, r, "/special/Attachments", http.StatusFound)
 	case "RandomFile":
-		files := listFiles(config)
+		files := file.ListFiles(config)
 		file := files[rand.IntN(len(files))]
 		http.Redirect(w, r, "/view/"+file.FileName, http.StatusFound)
 	default:

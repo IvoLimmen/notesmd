@@ -1,4 +1,4 @@
-module githu.com/ivolimmen/notesmd
+module github.com/ivolimmen/notesmd
 
 go 1.24.4
 
