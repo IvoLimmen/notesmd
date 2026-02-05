@@ -1,0 +1,17 @@
+[Unit]
+Description=Notes MD Service
+Wants=network.target
+After=syslog.target network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/notesmd
+ExecStart=/opt/notesmd/notesmd --port 8070
+Restart=on-failure
+RestartSec=20
+KillMode=process
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
