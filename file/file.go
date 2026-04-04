@@ -42,10 +42,10 @@ var tmplFiles = []string{
 var templates = template.Must(template.ParseFiles(tmplFiles...))
 
 type Page struct {
-	Title   string
-	Body    template.HTML
-	Raw     []byte
-	Special bool
+	Title     string
+	Body      template.HTML
+	Raw       []byte
+	IsSpecial bool
 }
 
 func InitConfig(dataDir string, style string) types.Config {
@@ -89,6 +89,10 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	}
 }
 
+func RenamePage(oldName string, newName string, config types.Config) {
+	os.Rename(filepath.Join(config.DataDir, oldName+".md"), filepath.Join(config.DataDir, newName+".md"))
+}
+
 func LoadPage(title string, config types.Config) (*Page, error) {
 	filename := filepath.Join(config.DataDir, title+".md")
 	raw, err := os.ReadFile(filename)
@@ -109,7 +113,7 @@ func LoadPage(title string, config types.Config) (*Page, error) {
 
 	body := template.HTML(html)
 
-	return &Page{Title: title, Body: body, Raw: raw, Special: false}, nil
+	return &Page{Title: title, Body: body, Raw: raw, IsSpecial: false}, nil
 }
 
 func ShowFiles(w http.ResponseWriter, templateView types.TemplateView) {
@@ -121,7 +125,7 @@ func ShowFiles(w http.ResponseWriter, templateView types.TemplateView) {
 
 func ShowAttachments(w http.ResponseWriter, config types.Config) {
 	files := ListAttachments(config)
-	err := templates.ExecuteTemplate(w, "attachments.html", types.TemplateView{Title: "Attachments", Files: files, Special: true, SearchCriteria: ""})
+	err := templates.ExecuteTemplate(w, "attachments.html", types.TemplateView{Title: "Attachments", Files: files, IsSpecial: true, SearchCriteria: ""})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

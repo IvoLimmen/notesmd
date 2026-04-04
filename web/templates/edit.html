@@ -1,228 +1,231 @@
 {{template "header" .}}
 <body>
-    <div class="row">
-        <div class="column">
-            <h1>Editing {{.Title}}</h1>
-
-            <form action="/save/{{.Title}}" method="POST" accept-charset="UTF-8">
-                <div><textarea name="body" rows="50" cols="120">{{printf "%s" .Raw}}</textarea></div>
-                <div><input type="submit" value="Save"></div>
-            </form>
-        </div>
-        <div class="column sheetsheet">
-            <div>
-                <a href="https://www.markdownlang.com/cheatsheet/">Complete cheatsheet</a>
+    {{template "menu" .}}
+    <div class="main">
+        <div class="row">
+            <div class="column">
+                <h1>Editing {{.Title}}</h1>
+                <form action="/save/{{.Title}}" method="POST" accept-charset="UTF-8">                
+                    <div><textarea name="body" rows="50" cols="120">{{printf "%s" .Raw}}</textarea></div>
+                    <div>Rename to<input name="newname" value="{{.Title}}"></div>
+                    <div><input type="submit" value="Save"></div>
+                </form>
+            </div>
+            <div class="column sheetsheet">
                 <div>
-                    <details>
-                        <summary>Emphasis</summary>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <code>_Text_</code>
-                                    </td>
-                                    <td>
-                                        Displays text in italics
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>**Text**</code>
-                                    </td>
-                                    <td>Displays the text in bold</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>**_Text_**</code>
-                                    </td>
-                                    <td>Displays the text in bold and italics</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>~~Text~~</code>
-                                    </td>
-                                    <td>Adds strikethrough effect to the text</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </details>
-                    <details>
-                        <summary>Lists</summary>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <code>1. item1</code>
-                                    </td>
-                                    <td>First ordered list item</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>2. item2</code>
-                                    </td>
-                                    <td>Second ordered list item</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>⋅⋅1. Item</code>
-                                    </td>
-                                    <td>Ordered sub-list item</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>* Item</code>
-                                    </td>
-                                    <td>Unordered list item</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>⋅⋅* Item</code>
-                                    </td>
-                                    <td>Unordered sub-list item</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </details>
-                    <details>
-                        <summary>Links</summary>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <code>{Other page}</code>
-                                    </td>
-                                    <td>Wiki style link, will refer to "/view/Other page" and redirect to the edit if it does not exist.</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>[text link](https://duckduckgo.com)</code>
-                                    </td>
-                                    <td>Inline-style link</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>[text link with title](https://duckduckgo.com "DDG Home")</code>
-                                    </td>
-                                    <td>Inline-style link with title</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>[Reference-style link][Arbitrary case-insensitive reference text]</code>
-                                    </td>
-                                    <td>Reference style link</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>[Use numbers for reference-style link definitions][1]</code>
-                                    </td>
-                                    <td>Links with a reference number. The number needs to be defined as [1]: http://slashdot.org</td>
-                                </tr>
+                    <a href="https://www.markdownlang.com/cheatsheet/">Complete cheatsheet</a>
+                    <div>
+                        <details>
+                            <summary>Emphasis</summary>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <code>_Text_</code>
+                                        </td>
+                                        <td>
+                                            Displays text in italics
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>**Text**</code>
+                                        </td>
+                                        <td>Displays the text in bold</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>**_Text_**</code>
+                                        </td>
+                                        <td>Displays the text in bold and italics</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>~~Text~~</code>
+                                        </td>
+                                        <td>Adds strikethrough effect to the text</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </details>
+                        <details>
+                            <summary>Lists</summary>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <code>1. item1</code>
+                                        </td>
+                                        <td>First ordered list item</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>2. item2</code>
+                                        </td>
+                                        <td>Second ordered list item</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>⋅⋅1. Item</code>
+                                        </td>
+                                        <td>Ordered sub-list item</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>* Item</code>
+                                        </td>
+                                        <td>Unordered list item</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>⋅⋅* Item</code>
+                                        </td>
+                                        <td>Unordered sub-list item</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </details>
+                        <details>
+                            <summary>Links</summary>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <code>{Other page}</code>
+                                        </td>
+                                        <td>Wiki style link, will refer to "/view/Other page" and redirect to the edit if it does not exist.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>[text link](https://duckduckgo.com)</code>
+                                        </td>
+                                        <td>Inline-style link</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>[text link with title](https://duckduckgo.com "DDG Home")</code>
+                                        </td>
+                                        <td>Inline-style link with title</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>[Reference-style link][Arbitrary case-insensitive reference text]</code>
+                                        </td>
+                                        <td>Reference style link</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>[Use numbers for reference-style link definitions][1]</code>
+                                        </td>
+                                        <td>Links with a reference number. The number needs to be defined as [1]: http://slashdot.org</td>
+                                    </tr>
 
-                            </tbody>
-                        </table>
-                    </details>
-                    <details>
-                        <summary>Images</summary>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <code>![alt text](https://github.com/n48.png "Logo Title")</code>
-                                    </td>
-                                    <td>Inline style</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </details>
+                                </tbody>
+                            </table>
+                        </details>
+                        <details>
+                            <summary>Images</summary>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <code>![alt text](https://github.com/n48.png "Logo Title")</code>
+                                        </td>
+                                        <td>Inline style</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </details>
 
-                    <details>
-                        <summary>Headers</summary>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <code># Heading</code>
-                                    </td>
-                                    <td>H1</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>## Heading</code>
-                                    </td>
-                                    <td>H2</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>### Heading</code>
-                                    </td>
-                                    <td>H3</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>#### Heading</code>
-                                    </td>
-                                    <td>H4</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>##### Heading</code>
-                                    </td>
-                                    <td>H5</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>###### Heading</code>
-                                    </td>
-                                    <td>H6</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </details>
-                    <details>
-                        <summary>Code and Syntax Highlighting</summary>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <code>`code`</code>
-                                    </td>
-                                    <td>Inline code has back-ticks around it</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <code>``` Code blocks  ```</code>
-                                    </td>
-                                    <td>Blocks of code are either fenced by lines with three back-ticks or are indented with four spaces</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </details>
-                    <details>
-                        <summary>Blockquotes</summary>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <code>&gt; Blockquotes</code>
-                                    </td>
-                                    <td>Blockquotes are very handy in email to emulate reply text</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </details>
-                    <details>
-                        <summary>Horizontal Rule</summary>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <code>---</code>
-                                    </td>
-                                    <td>You can get a horizontal rule by typing three or more hyphens (-), asterisks (*) or underscore (_)</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </details>
+                        <details>
+                            <summary>Headers</summary>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <code># Heading</code>
+                                        </td>
+                                        <td>H1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>## Heading</code>
+                                        </td>
+                                        <td>H2</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>### Heading</code>
+                                        </td>
+                                        <td>H3</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>#### Heading</code>
+                                        </td>
+                                        <td>H4</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>##### Heading</code>
+                                        </td>
+                                        <td>H5</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>###### Heading</code>
+                                        </td>
+                                        <td>H6</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </details>
+                        <details>
+                            <summary>Code and Syntax Highlighting</summary>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <code>`code`</code>
+                                        </td>
+                                        <td>Inline code has back-ticks around it</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <code>``` Code blocks  ```</code>
+                                        </td>
+                                        <td>Blocks of code are either fenced by lines with three back-ticks or are indented with four spaces</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </details>
+                        <details>
+                            <summary>Blockquotes</summary>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <code>&gt; Blockquotes</code>
+                                        </td>
+                                        <td>Blockquotes are very handy in email to emulate reply text</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </details>
+                        <details>
+                            <summary>Horizontal Rule</summary>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <code>---</code>
+                                        </td>
+                                        <td>You can get a horizontal rule by typing three or more hyphens (-), asterisks (*) or underscore (_)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </details>
+                    </div>
                 </div>
             </div>
         </div>

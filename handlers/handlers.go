@@ -46,12 +46,18 @@ func ViewHandler(w http.ResponseWriter, r *http.Request, title string, config ty
 }
 
 func SaveHandler(w http.ResponseWriter, r *http.Request, title string, config types.Config) {
-	body := r.FormValue("body")
-	p := &file.Page{Title: title, Raw: []byte(body)}
-	err := file.Save(p, config)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	newName := r.FormValue("newname")
+	if newName != title {
+		file.RenamePage(title, newName, config)
+		title = newName
+	} else {
+		body := r.FormValue("body")
+		p := &file.Page{Title: title, Raw: []byte(body)}
+		err := file.Save(p, config)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
 }
@@ -107,7 +113,7 @@ func SpecialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 	switch command {
 	case "AllFiles":
 		files := file.ListFiles(config)
-		file.ShowFiles(w, types.TemplateView{Title: "All Files", Files: files, Special: true, SearchCriteria: ""})
+		file.ShowFiles(w, types.TemplateView{Title: "All Files", Files: files, IsSpecial: true, SearchCriteria: ""})
 	case "SearchFiles":
 		criteria := r.FormValue("search")
 		files, completeMatch := file.Search(file.ListFiles(config), criteria, config)
@@ -116,7 +122,7 @@ func SpecialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 			files = append(files, types.ExistingFile{FileName: caser.String(criteria), Exists: false})
 		}
 		title := fmt.Sprintf("Files found with '%s'", criteria)
-		file.ShowFiles(w, types.TemplateView{Title: title, Files: files, Special: true, SearchCriteria: criteria})
+		file.ShowFiles(w, types.TemplateView{Title: title, Files: files, IsSpecial: true, SearchCriteria: criteria})
 	case "Attachments":
 		file.ShowAttachments(w, config)
 	case "DelAtt":

@@ -3,7 +3,7 @@ package types
 type TemplateView struct {
 	Title          string
 	Files          []ExistingFile
-	Special        bool
+	IsSpecial      bool
 	SearchCriteria string
 }
 
