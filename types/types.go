@@ -5,11 +5,17 @@ type TemplateView struct {
 	Files          []ExistingFile
 	IsSpecial      bool
 	SearchCriteria string
+	Menu           []Menu
+}
+
+type Menu struct {
+	Name, PageName string
 }
 
 type Config struct {
 	DataDir  string
 	AllFiles []string
+	Menu     []Menu
 }
 
 type ExistingFile struct {

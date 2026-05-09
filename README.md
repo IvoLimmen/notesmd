@@ -13,6 +13,7 @@ Yes there are a lot of markdown style note taking applications and I tried a few
 * Simple file search and word search (minimum of 3 characters)
 * Editing page is simple but has a nice cheatsheet
 * Uploading, removing attachments (meant for images)
+* Extra optional menu below the action menu
 
 ## Building app
 
@@ -33,6 +34,18 @@ Or type:
     --data_dir, Directory to store the files in, 'notes' as default
     --port, Port to run the webserver on, 8080 as default
     --code_style, syntax highlighting style with 'Monokai' as default
+
+## Menu
+
+If you create a `menu.json` file in your notes directory with the following structure:
+
+```json
+{
+  "Name": "Name for listing", "PageName": "Actual filename"
+}
+```
+
+And extra menu will appear below the action menu.
 
 ## Credits
 

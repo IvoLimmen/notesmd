@@ -14,4 +14,11 @@
         <input name="search" type="text" autocomplete="off" placeholder="Search!"><input type="submit" value="Search">
     </form>
 </div>
+{{ if .Menu }}
+<div class="menu">
+{{range .Menu}}
+[<a href="/view/{{.PageName}}">{{.Name}}</a>]
+{{end}}
+</div>
+{{ end }}
 {{- end }}

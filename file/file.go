@@ -2,6 +2,7 @@ package file
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -46,6 +47,7 @@ type Page struct {
 	Body      template.HTML
 	Raw       []byte
 	IsSpecial bool
+	Menu      []types.Menu
 }
 
 func InitConfig(dataDir string, style string) types.Config {
@@ -62,8 +64,44 @@ func InitConfig(dataDir string, style string) types.Config {
 
 	config := types.Config{DataDir: "undefined"}
 	config.DataDir = dataDir
+	config.Menu = loadMenu(config)
 
 	return config
+}
+
+func loadMenu(config types.Config) []types.Menu {
+	menuItems := []types.Menu{}
+	filename := filepath.Join(config.DataDir, "menu.json")
+	raw, err := os.ReadFile(filename)
+	if err != nil {
+		return menuItems
+	}
+	dec := json.NewDecoder(strings.NewReader(string(raw)))
+
+	// read open bracket
+	t, err := dec.Token()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_ = t
+
+	for dec.More() {
+		var m types.Menu
+		if err := dec.Decode(&m); err == io.EOF {
+			break
+		} else if err != nil {
+			log.Fatal(err)
+		}
+		menuItems = append(menuItems, m)
+	}
+
+	t2, err := dec.Token()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_ = t2
+
+	return menuItems
 }
 
 func Save(p *Page, config types.Config) error {
@@ -159,7 +197,10 @@ func ListFiles(config types.Config) []types.ExistingFile {
 	for _, e := range entries {
 		if !e.IsDir() {
 			base := strings.Split(e.Name(), ".")[0]
-			files = append(files, types.ExistingFile{FileName: base, Exists: true})
+			ext := strings.Split(e.Name(), ".")[1]
+			if ext == "md" {
+				files = append(files, types.ExistingFile{FileName: base, Exists: true})
+			}
 		}
 	}
 

@@ -42,6 +42,7 @@ func ViewHandler(w http.ResponseWriter, r *http.Request, title string, config ty
 		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
 		return
 	}
+	p.Menu = config.Menu
 	file.RenderTemplate(w, "view", p)
 }
 
@@ -77,6 +78,7 @@ func EditHandler(w http.ResponseWriter, r *http.Request, title string, config ty
 	if err != nil {
 		p = &file.Page{Title: title}
 	}
+	p.Menu = config.Menu
 	file.RenderTemplate(w, "edit", p)
 }
 
@@ -113,7 +115,7 @@ func SpecialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 	switch command {
 	case "AllFiles":
 		files := file.ListFiles(config)
-		file.ShowFiles(w, types.TemplateView{Title: "All Files", Files: files, IsSpecial: true, SearchCriteria: ""})
+		file.ShowFiles(w, types.TemplateView{Title: "All Files", Files: files, IsSpecial: true, Menu: config.Menu, SearchCriteria: ""})
 	case "SearchFiles":
 		criteria := r.FormValue("search")
 		files, completeMatch := file.Search(file.ListFiles(config), criteria, config)
@@ -122,7 +124,7 @@ func SpecialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 			files = append(files, types.ExistingFile{FileName: caser.String(criteria), Exists: false})
 		}
 		title := fmt.Sprintf("Files found with '%s'", criteria)
-		file.ShowFiles(w, types.TemplateView{Title: title, Files: files, IsSpecial: true, SearchCriteria: criteria})
+		file.ShowFiles(w, types.TemplateView{Title: title, Files: files, IsSpecial: true, Menu: config.Menu, SearchCriteria: criteria})
 	case "Attachments":
 		file.ShowAttachments(w, config)
 	case "DelAtt":
