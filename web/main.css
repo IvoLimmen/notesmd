@@ -41,6 +41,8 @@ td {
 }
 
 pre code { 
+  background: url(assets/clipboard.svg) no-repeat top right;
+  background-size: 30px;
   display: block;
   border: 1px solid black;
   overflow-y: scroll;
