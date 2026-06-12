@@ -12,6 +12,12 @@ window.addEventListener('DOMContentLoaded',function () {
             event.preventDefault();
             document.forms[0].submit()
         }
+
+        if(event.key == '/') {
+            event.stopPropagation();
+            event.preventDefault();            
+            document.getElementsByName('search')[0].focus();
+        }
     });
 
     document.querySelectorAll('pre code').forEach((block) => {

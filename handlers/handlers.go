@@ -122,6 +122,15 @@ func SpecialHandler(w http.ResponseWriter, r *http.Request, path string, config 
 		caser := cases.Title(language.English)
 		if !completeMatch {
 			files = append(files, types.ExistingFile{FileName: caser.String(criteria), Exists: false})
+		} else {
+			// filename matches
+			for _, entry := range files {
+				if strings.Contains(strings.ToLower(entry.FileName), strings.ToLower(criteria)) {
+					if strings.EqualFold(strings.ToLower(entry.FileName), strings.ToLower(criteria)) {
+						http.Redirect(w, r, "/view/"+entry.FileName, http.StatusFound)
+					}
+				}
+			}
 		}
 		title := fmt.Sprintf("Files found with '%s'", criteria)
 		file.ShowFiles(w, types.TemplateView{Title: title, Files: files, IsSpecial: true, Menu: config.Menu, SearchCriteria: criteria})

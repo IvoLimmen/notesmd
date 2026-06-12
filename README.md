@@ -10,10 +10,15 @@ Yes there are a lot of markdown style note taking applications and I tried a few
 * Markdown files (no database storage)
 * Works like a wiki, if a page does not exist it opens the editor
 * Has syntax highlighting for code blocks.
-* Simple file search and word search (minimum of 3 characters)
+* Clicking on a code block will copy it to the clipboard.
+* Simple file search and word search (minimum of 3 characters) 
 * Editing page is simple but has a nice cheatsheet
 * Uploading, removing attachments (meant for images)
 * Extra optional menu below the action menu
+* When searching for a word that is the name of the file you are redirected to the file.
+* Pressing '/' will set the focus to the search box.
+* Pressing 'e' will redirect to the edit page.
+* Pressing ctrl+'s' will submit the page (save).
 
 ## Building app
 
