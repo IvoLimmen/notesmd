@@ -18,6 +18,14 @@ window.addEventListener('DOMContentLoaded',function () {
             event.preventDefault();            
             document.getElementsByName('search')[0].focus();
         }
+        if(event.key == 'h') {
+            event.stopPropagation();
+            event.preventDefault();            
+            var location = window.location.toString();
+            var index = location.lastIndexOf('/');            
+            var newloc = location.substring(0, index) + 'Index';
+            window.location = newloc;
+        }
     });
 
     document.querySelectorAll('pre code').forEach((block) => {

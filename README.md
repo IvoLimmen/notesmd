@@ -19,6 +19,7 @@ Yes there are a lot of markdown style note taking applications and I tried a few
 * Pressing '/' will set the focus to the search box.
 * Pressing 'e' will redirect to the edit page.
 * Pressing ctrl+'s' will submit the page (save).
+* Pressing 'h' will return to the 'Index' file.
 
 ## Building app
 
